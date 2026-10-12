@@ -1,0 +1,8 @@
+{
+  "packageName": "express",
+  "repositoryUrl": "https://registry.npmjs.org",
+  "testRepositoryPath": null,
+  "testMode": false,
+  "packageVersion": "4.18.2",
+  "filterSubstring": "types"
+}

@@ -1,0 +1,92 @@
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
+public final class ConfigLoader {
+
+    private static final String NULL_LITERAL = "null";
+
+    private ConfigLoader() {
+
+    }
+
+    public static AppConfig load(String path) throws IOException {
+        Path file = Paths.get(path);
+        checkFile(file);
+
+        String content = Files.readString(file, StandardCharsets.UTF_8);
+        Map<String, String> raw = parseFlatJson(content);
+
+        return buildConfig(raw);
+    }
+
+    private static void checkFile(Path file) {
+        if (!Files.exists(file)) {
+            throw new IllegalArgumentException("Файл конфигурации не найден: " + file);
+        }
+        if (!Files.isRegularFile(file)) {
+            throw new IllegalArgumentException("Путь не является файлом: " + file);
+        }
+        if (!Files.isReadable(file)) {
+            throw new IllegalArgumentException("Файл недоступен для чтения: " + file);
+        }
+    }
+
+    private static AppConfig buildConfig(Map<String, String> raw) {
+        return new AppConfig(
+                raw.get("packageName"),
+                raw.get("repositoryUrl"),
+                raw.get("testRepositoryPath"),
+                Boolean.parseBoolean(raw.getOrDefault("testMode", "false")),
+                raw.get("packageVersion"),
+                raw.get("filterSubstring")
+        );
+    }
+
+    private static Map<String, String> parseFlatJson(String json) {
+        Map<String, String> result = new HashMap<>();
+        String trimmed = json.trim();
+        checkBraces(trimmed);
+
+        String body = trimmed.substring(1, trimmed.length() - 1).trim();
+        if (body.isEmpty()) {
+            return result;
+        }
+
+        for (String pair : body.split(",")) {
+            parsePair(pair, result);
+        }
+        return result;
+    }
+
+    private static void checkBraces(String text) {
+        if (!text.startsWith("{") || !text.endsWith("}")) {
+            throw new IllegalArgumentException(
+                    "JSON должен начинаться с '{' и заканчиваться '}'");
+        }
+    }
+
+    private static void parsePair(String pair, Map<String, String> target) {
+        String[] kv = pair.split(":", 2);
+        if (kv.length != 2) {
+            throw new IllegalArgumentException("Некорректная пара ключ-значение: " + pair);
+        }
+        String key = stripQuotes(kv[0].trim());
+        String value = stripQuotes(kv[1].trim());
+        if (NULL_LITERAL.equals(value)) {
+            value = null;
+        }
+        target.put(key, value);
+    }
+
+    private static String stripQuotes(String value) {
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(1, value.length() - 1);
+        }
+        return value;
+    }
+}
