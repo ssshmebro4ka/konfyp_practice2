@@ -10,8 +10,11 @@ public final class ConfigLoader {
 
     private static final String NULL_LITERAL = "null";
 
-    private ConfigLoader() {
+    private static final int QUOTES_LENGTH = 2;
+    private static final int QUOTE_TRIM_INDEX = 1;
+    private static final int PAIR_SPLIT_LIMIT = 2;
 
+    private ConfigLoader() {
     }
 
     public static AppConfig load(String path) throws IOException {
@@ -52,7 +55,7 @@ public final class ConfigLoader {
         String trimmed = json.trim();
         checkBraces(trimmed);
 
-        String body = trimmed.substring(1, trimmed.length() - 1).trim();
+        String body = trimmed.substring(QUOTE_TRIM_INDEX, trimmed.length() - QUOTE_TRIM_INDEX).trim();
         if (body.isEmpty()) {
             return result;
         }
@@ -71,8 +74,8 @@ public final class ConfigLoader {
     }
 
     private static void parsePair(String pair, Map<String, String> target) {
-        String[] kv = pair.split(":", 2);
-        if (kv.length != 2) {
+        String[] kv = pair.split(":", PAIR_SPLIT_LIMIT);
+        if (kv.length != PAIR_SPLIT_LIMIT) {
             throw new IllegalArgumentException("Некорректная пара ключ-значение: " + pair);
         }
         String key = stripQuotes(kv[0].trim());
@@ -84,8 +87,8 @@ public final class ConfigLoader {
     }
 
     private static String stripQuotes(String value) {
-        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
-            return value.substring(1, value.length() - 1);
+        if (value.length() >= QUOTES_LENGTH && value.startsWith("\"") && value.endsWith("\"")) {
+            return value.substring(QUOTE_TRIM_INDEX, value.length() - QUOTE_TRIM_INDEX);
         }
         return value;
     }
