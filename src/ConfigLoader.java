@@ -27,15 +27,15 @@ public final class ConfigLoader {
         return buildConfig(raw);
     }
 
-    private static void checkFile(Path file) {
+    private static void checkFile(Path file) throws IOException {
         if (!Files.exists(file)) {
-            throw new IllegalArgumentException("Файл конфигурации не найден: " + file);
+            throw new IOException("Файл конфигурации не найден: " + file);
         }
         if (!Files.isRegularFile(file)) {
-            throw new IllegalArgumentException("Путь не является файлом: " + file);
+            throw new IOException("Путь не является файлом: " + file);
         }
         if (!Files.isReadable(file)) {
-            throw new IllegalArgumentException("Файл недоступен для чтения: " + file);
+            throw new IOException("Файл недоступен для чтения: " + file);
         }
     }
 
@@ -79,7 +79,7 @@ public final class ConfigLoader {
             throw new IllegalArgumentException("Некорректная пара ключ-значение: " + pair);
         }
         String key = stripQuotes(kv[0].trim());
-        String value = stripQuotes(kv[1].trim());
+        String value = stripQuotes(kv[1]);
         if (NULL_LITERAL.equals(value)) {
             value = null;
         }

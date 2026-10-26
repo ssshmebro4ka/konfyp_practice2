@@ -36,7 +36,7 @@ public final class ConfigValidator {
             throw new IllegalArgumentException(
                     "Должен быть указан либо 'repositoryUrl', либо 'testRepositoryPath'");
         }
-        if (!isBlank(url) && !url.startsWith("http")) {
+        if (!isBlank(url) && !(url.startsWith("http://") || url.startsWith("https://"))) {
             throw new IllegalArgumentException(
                     "'repositoryUrl' должен начинаться с http/https");
         }
